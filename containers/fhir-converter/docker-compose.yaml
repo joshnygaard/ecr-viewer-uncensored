@@ -1,0 +1,9 @@
+services:
+  fhir-converter-service:
+    platform: linux/amd64
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    environment:
+      DEV_MODE: "false"

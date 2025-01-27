@@ -1,0 +1,87 @@
+{
+  "ecr_id": {
+    "fhir_path": "Bundle.entry.resource.id[0]",
+    "data_type": "string",
+    "nullable": false
+  },
+  "eicr_set_id": {
+    "fhir_path": "Bundle.entry.resource.where(resourceType= 'Composition').identifier.where(type.coding.code = '55751-2').where(use='official').value",
+    "data_type": "string",
+    "nullable": true
+  },
+  "eicr_version_number": {
+    "fhir_path": "Bundle.entry.resource.where(resourceType= 'Composition' ).extension.where(url='http://hl7.org/fhir/StructureDefinition/composition-clinicaldocument-versionNumber').valueString",
+    "data_type": "string",
+    "nullable": true
+  },
+  "last_name": {
+    "fhir_path": "Bundle.entry.resource.where(resourceType = 'Patient').name.first().family",
+    "data_type": "string",
+    "nullable": true,
+    "metadata": {
+      "category": "Personal info"
+    }
+  },
+  "first_name": {
+    "fhir_path": "Bundle.entry.resource.where(resourceType = 'Patient').name.first().given.first()",
+    "data_type": "string",
+    "nullable": true,
+    "metadata": {
+      "category": "Personal info"
+    }
+  },
+  "birth_date": {
+    "fhir_path": "Bundle.entry.resource.where(resourceType = 'Patient').birthDate",
+    "data_type": "date",
+    "nullable": true,
+    "metadata": {
+      "category": "Personal info"
+    }
+  },
+  "rr": {
+    "fhir_path": "Bundle.entry.resource.where(resourceType='Observation').where(meta.profile = 'http://hl7.org/fhir/us/ecr/StructureDefinition/rr-reportability-information-observation')",
+    "data_type": "array",
+    "nullable": true,
+    "secondary_schema": {
+      "uuid": {
+        "fhir_path": "Observation.id",
+        "data_type": "string",
+        "nullable": true,
+        "metadata": {
+          "category": "RR Reportability Information"
+        }
+      },
+      "condition": {
+        "fhir_path": "iif(Observation.valueCodeableConcept.text.exists(), Observation.valueCodeableConcept.text, Observation.valueCodeableConcept.coding.display)",
+        "data_type": "string",
+        "nullable": true,
+        "metadata": {
+          "category": "RR Reportability Information"
+        }
+      },
+      "rule_summaries": {
+        "fhir_path": "Observation.extension.where(url = 'http://hl7.org/fhir/us/ecr/StructureDefinition/us-ph-determination-of-reportability-rule-extension')",
+        "data_type": "array",
+        "nullable": true,
+        "secondary_schema": {
+          "summary": {
+            "fhir_path": "valueString",
+            "data_type": "string",
+            "nullable": true
+          }
+        },
+        "metadata": {
+          "category": "RR Reportability Information"
+        }
+      }
+    }
+  },
+  "report_date": {
+    "fhir_path": "Bundle.entry.resource.where(resourceType = 'Encounter').period.start",
+    "data_type": "date",
+    "nullable": true,
+    "metadata": {
+      "category": "RR Reportability Information"
+    }
+  }
+}

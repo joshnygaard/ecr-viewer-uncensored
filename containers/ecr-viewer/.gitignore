@@ -1,0 +1,15 @@
+node_modules
+.next/
+.env.local
+
+# localstack data
+volume/
+seed-scripts/baseECR/TN
+seed-scripts/baseECR/KY
+seed-scripts/baseECR/ME
+seed-scripts/baseECR/CO
+
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

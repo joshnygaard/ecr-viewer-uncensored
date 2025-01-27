@@ -1,0 +1,49 @@
+comment:
+  layout: "condensed_header, condensed_files, condensed_footer"
+  hide_project_coverage: true
+coverage:
+  status:
+    project:
+      default:
+        target: auto # auto means better than the last non-failing build
+    patch:
+      default:
+        target: 95%
+        threshold: 10%
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+      - patch: 95%
+  individual_flags:
+    - name: ecr-viewer
+      paths:
+        - "containers/ecr-viewer"
+      statuses:
+        - type
+    - name: fhir-converter
+      paths:
+        - "containers/fhir-converter"
+    - name: ingestion
+      paths:
+        - "containers/ingestion"
+    - name: "message-parser"
+      paths:
+        - "containers/message-parser"
+    - name: "message-refiner"
+      paths:
+        - "containers/message-refiner"
+    - name: "orchestration"
+      paths:
+        - "containers/orchestration"
+    - name: "record-linkage"
+      paths:
+        - "containers/record-linkage"
+    - name: "trigger-code-reference"
+      paths:
+        - "containers/trigger-code-reference"
+    - name: "validation"
+      paths:
+        - "containers/validation"

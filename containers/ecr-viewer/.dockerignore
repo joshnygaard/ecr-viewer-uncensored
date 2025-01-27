@@ -1,0 +1,10 @@
+.next
+.github
+.env
+docker-compose.yaml
+Dockerfile
+node_modules
+seed-scripts
+e2e
+design-review
+.swc

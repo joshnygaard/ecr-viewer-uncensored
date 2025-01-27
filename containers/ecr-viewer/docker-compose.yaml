@@ -1,0 +1,121 @@
+name: ecr-viewer
+
+services:
+  ecr-viewer:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - CONFIG_NAME=${CONFIG_NAME:-AWS_SQLSERVER_NON_INTEGRATED}
+      - NBS_PUB_KEY=${NBS_PUB_KEY}
+      # POSTGRES
+      - DATABASE_URL=postgres://postgres:pw@postgres:5432/ecr_viewer_db
+      # AWS
+      - AWS_CUSTOM_ENDPOINT=http://aws-storage:4566
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - ECR_BUCKET_NAME=${ECR_BUCKET_NAME:-ecr-viewer-files}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-123}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-xyz}
+      # Azure
+      - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azure-storage:10000/devstoreaccount1;
+      - AZURE_CONTAINER_NAME=${AZURE_CONTAINER_NAME:-ecr-viewer-files}
+      # SQL Server
+      - SQL_SERVER_USER=${SQL_SERVER_USER:-sa}
+      - SQL_SERVER_PASSWORD=${SQL_SERVER_PASSWORD:-Password1!}
+      - SQL_SERVER_HOST=${SQL_SERVER_HOST:-sqlserver}
+    profiles:
+      - ecr-viewer
+
+  postgres:
+    image: "postgres:alpine"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./seed-scripts/sql/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./sql/core.sql:/docker-entrypoint-initdb.d/core.sql
+      - ./seed-scripts/sql/.pgpass/:/usr/local/lib/.pgpass
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - PGUSER=postgres
+      - POSTGRES_PASSWORD=pw
+      - POSTGRES_DB=ecr_viewer_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+    profiles:
+      - AWS_PG_NON_INTEGRATED
+      - AZURE_PG_NON_INTEGRATED
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SQL_SERVER_PASSWORD:-Password1!}
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./sql/entrypoint.sh:/var/opt/mssql/scripts/entrypoint.sh
+      - ./sql/extended.sql:/var/opt/mssql/scripts/extended.sql
+    entrypoint: /bin/bash -c "/var/opt/mssql/scripts/entrypoint.sh"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Password1! -Q "SELECT * FROM sys.tables where name=''ECR_DATA''" -C | grep -q "(0 rows affected)" && exit 1 || exit 0',
+        ]
+      interval: 20s
+      retries: 5
+    profiles:
+      - AWS_SQLSERVER_NON_INTEGRATED
+      - AZURE_SQLSERVER_NON_INTEGRATED
+
+  aws-storage:
+    image: gresau/localstack-persist:3
+    ports:
+      - "4566:4566"
+    volumes:
+      - aws-data:/persisted-data
+      - ./seed-scripts/aws:/etc/localstack/init/ready.d
+    profiles:
+      - AWS_INTEGRATED
+      - AWS_PG_NON_INTEGRATED
+      - AWS_SQLSERVER_NON_INTEGRATED
+
+  azure-storage:
+    build:
+      context: ./seed-scripts
+      dockerfile: azurite.Dockerfile
+    hostname: azurite
+    restart: always
+    command:
+      - /bin/sh
+      - -c
+      - |
+        azurite --blobHost 0.0.0.0 --blobPort 10000 -l data --debug /data/debug.log &
+        sleep 5
+        az storage container create --name ecr-viewer-files
+        tail -f /dev/null
+    volumes:
+      - azure-data:/opt/azurite/data
+    environment:
+      AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1;
+    healthcheck:
+      test: nc 127.0.0.1 10000 -z
+      interval: 1s
+      retries: 30
+    ports:
+      - "10000:10000"
+    profiles:
+      - AZURE_INTEGRATED
+      - AZURE_PG_NON_INTEGRATED
+      - AZURE_SQLSERVER_NON_INTEGRATED
+
+volumes:
+  db:
+  azure-data:
+  aws-data:
