@@ -329,7 +329,7 @@ export const evaluateDemographicsData = (
     },
     {
       title: "Sex",
-      value: patientSex && ["Male", "Female"].includes(patientSex) ? patientSex : "Unknown",
+      value: patientSex && ["Male", "Female"].includes(patientSex) ? patientSex : "",
     },
     {
       title: "Race",
