@@ -352,9 +352,7 @@ export const evaluateDemographicsData = (
     },
     {
       title: "Sex",
-      // Unknown and Other sex options removed to be in compliance with Executive Order 14168
-      value:
-        patientSex && ["Male", "Female"].includes(patientSex) ? patientSex : "",
+      value: patientSex && ["Male", "Female"].includes(patientSex) ? patientSex : "",
     },
     {
       title: "Race",
