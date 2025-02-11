@@ -321,10 +321,6 @@ export const evaluateDemographicsData = (
   fhirBundle: Bundle,
   mappings: PathMappings,
 ) => {
-  const patientSex = toTitleCase(
-    evaluate(fhirBundle, mappings.patientGender)[0],
-  );
-
   const demographicsData: DisplayDataProps[] = [
     {
       title: "Patient Name",
@@ -352,7 +348,7 @@ export const evaluateDemographicsData = (
     },
     {
       title: "Sex",
-      value: patientSex && ["Male", "Female"].includes(patientSex) ? patientSex : "Unknown",
+      value: toTitleCase(evaluate(fhirBundle, mappings.patientGender)[0]),
     },
     {
       title: "Race",

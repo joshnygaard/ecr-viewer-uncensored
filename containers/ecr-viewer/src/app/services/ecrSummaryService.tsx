@@ -38,10 +38,6 @@ export const evaluateEcrSummaryPatientDetails = (
   fhirBundle: Bundle,
   fhirPathMappings: PathMappings,
 ) => {
-  const patientSex = toTitleCase(
-    evaluate(fhirBundle, fhirPathMappings.patientGender)[0],
-  );
-
   return evaluateData([
     {
       title: "Patient Name",
@@ -54,7 +50,9 @@ export const evaluateEcrSummaryPatientDetails = (
     },
     {
       title: "Sex",
-      value: patientSex && ["Male", "Female"].includes(patientSex) ? patientSex : "Unknown",
+      value: toTitleCase(
+        evaluate(fhirBundle, fhirPathMappings.patientGender)[0],
+      ),
     },
     {
       title: "Patient Address",
